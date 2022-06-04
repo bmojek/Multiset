@@ -1,30 +1,72 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 
 namespace MultisetClassLibrary
 {
     public class Multiset<T> : IMultiSet<T>
     {
-        public int this[T item] => throw new NotImplementedException();
+        private Dictionary<T, int> mset = new Dictionary<T, int>();
 
-        public bool IsEmpty => throw new NotImplementedException();
+        #region ctor's
+        public Multiset() { }
 
-        public IEqualityComparer<T> Comparer => throw new NotImplementedException();
-
-        public int Count => throw new NotImplementedException();
-
-        public bool IsReadOnly => throw new NotImplementedException();
+        #endregion
+        public override string ToString()
+        {
+            StringBuilder wynik = new StringBuilder("{");
+            foreach(var x in mset)
+            {
+                wynik.Append($"{x.Key}:{x.Value}, ");
+            }
+            return wynik.ToString(0,wynik.Length-2)+"}";
+        }
 
         public IMultiSet<T> Add(T item, int numberOfItems = 1)
         {
-            throw new NotImplementedException();
+            if (mset.ContainsKey(item))
+                mset[item] += numberOfItems;
+            else
+                mset.Add(item, 1);
+            return this;
         }
 
-        public void Add(T item)
+        public void Add(T item) => this.Add(item, 1);
+        public int Count => mset.Values.Sum();
+        public bool IsEmpty => mset.Count == 0;
+        public bool IsReadOnly => false;
+
+        public int GetIndex(T item)
+        {
+            foreach(var x in mset)
+            {
+                if(x.Key.Equals(item))
+                {
+                    return x.Value;
+                }
+            }
+            return 0;
+        }
+
+        public IMultiSet<T> Remove(T item, int numberOfItems = 1)
         {
             throw new NotImplementedException();
         }
+
+        public bool Remove(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IMultiSet<T> RemoveAll(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int this[T item] => throw new NotImplementedException();
+        public IEqualityComparer<T> Comparer => throw new NotImplementedException();
 
         public IReadOnlyDictionary<T, int> AsDictionary()
         {
@@ -92,21 +134,6 @@ namespace MultisetClassLibrary
         }
 
         public bool Overlaps(IEnumerable<T> other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IMultiSet<T> Remove(T item, int numberOfItems = 1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(T item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IMultiSet<T> RemoveAll(T item)
         {
             throw new NotImplementedException();
         }
