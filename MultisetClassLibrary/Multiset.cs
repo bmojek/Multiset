@@ -38,7 +38,7 @@ namespace MultisetClassLibrary
         public bool IsEmpty => mset.Count == 0;
         public bool IsReadOnly => false;
 
-        public int GetIndex(T item)
+      /*  public int GetIndex(T item)
         {
             foreach(var x in mset)
             {
@@ -48,21 +48,36 @@ namespace MultisetClassLibrary
                 }
             }
             return 0;
-        }
+        }*/
 
         public IMultiSet<T> Remove(T item, int numberOfItems = 1)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public bool Remove(T item)
         {
-            throw new NotImplementedException();
+            foreach (var x in mset)
+            {
+                if (x.Key.Equals(item))
+                {
+                    mset.Remove(item);
+                    return true;
+                }
+            }
+            return false;
         }
 
         public IMultiSet<T> RemoveAll(T item)
         {
-            throw new NotImplementedException();
+            foreach (var x in mset)
+            {
+                if (x.Key.Equals(item))
+                {
+                    mset.Remove(item);
+                }
+            }
+            return this;
         }
 
         public int this[T item] => throw new NotImplementedException();

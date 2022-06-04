@@ -21,7 +21,9 @@ namespace ConsoleApp
             m.Add('b');
             m.Add('b');
             m.Add('a');
-            Console.WriteLine(m.GetIndex('b'));
+            Console.WriteLine(m);
+            m.Remove('a');
+            Console.WriteLine(m);
             
         }
     }
