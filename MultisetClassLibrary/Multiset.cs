@@ -6,22 +6,20 @@ using System.Linq;
 
 namespace MultisetClassLibrary
 {
-    public class Multiset<T> : IMultiSet<T>
+    public class MultiSet<T> : IMultiSet<T>
     {
         private Dictionary<T, int> mset = new Dictionary<T, int>();
 
-        #region ctor's
-        public Multiset() { }
-
-        #endregion
         public override string ToString()
         {
             StringBuilder wynik = new StringBuilder("{");
-            foreach(var x in mset)
+            foreach (var x in mset)
             {
                 wynik.Append($"{x.Key}:{x.Value}, ");
             }
-            return wynik.ToString(0,wynik.Length-2)+"}";
+            if (mset.Count == 0)
+                return "Multiset is empty";
+            return wynik.ToString(0, wynik.Length - 2) + "}";
         }
 
         public IMultiSet<T> Add(T item, int numberOfItems = 1)
@@ -34,138 +32,223 @@ namespace MultisetClassLibrary
         }
 
         public void Add(T item) => this.Add(item, 1);
+
         public int Count => mset.Values.Sum();
         public bool IsEmpty => mset.Count == 0;
         public bool IsReadOnly => false;
 
-      /*  public int GetIndex(T item)
+        public IEqualityComparer<T> Comparer => throw new NotImplementedException();
+
+        public void Clear() => mset.Clear();
+
+        public bool Contains(T item) => mset.ContainsKey(item);
+
+        public static MultiSet<T> Empty => new MultiSet<T>();
+
+        public static bool IsMultiSetReadonly(MultiSet<T> ms) => ms.IsReadOnly == true ? throw new NotSupportedException() : false;
+
+        public MultiSet()
+        { }
+
+        public MultiSet(IEnumerable<T> sequence)
         {
-            foreach(var x in mset)
+            foreach (var el in sequence)
             {
-                if(x.Key.Equals(item))
-                {
-                    return x.Value;
-                }
+                this.Add(el);
             }
-            return 0;
-        }*/
+        }
 
         public IMultiSet<T> Remove(T item, int numberOfItems = 1)
         {
+            IsMultiSetReadonly(this);
+            if (mset[item] < numberOfItems)
+                numberOfItems = mset[item];
+            if (mset.ContainsKey(item))
+            {
+                for (int i = 0; i < numberOfItems; i++)
+                    this.Remove(item);
+            }
             return this;
         }
 
         public bool Remove(T item)
         {
-            foreach (var x in mset)
+            IsMultiSetReadonly(this);
+            if (!mset.ContainsKey(item))
+                return false;
+            if (mset[item] > 1)
             {
-                if (x.Key.Equals(item))
-                {
-                    mset.Remove(item);
-                    return true;
-                }
+                mset[item]--;
+                return true;
             }
-            return false;
+            else
+            {
+                mset.Remove(item);
+                return true;
+            }
         }
 
         public IMultiSet<T> RemoveAll(T item)
         {
-            foreach (var x in mset)
-            {
-                if (x.Key.Equals(item))
-                {
-                    mset.Remove(item);
-                }
-            }
+            IsMultiSetReadonly(this);
+            if (mset.ContainsKey(item))
+                mset.Remove(item);
             return this;
         }
 
-        public int this[T item] => throw new NotImplementedException();
-        public IEqualityComparer<T> Comparer => throw new NotImplementedException();
+        public int this[T item] => mset[item];
 
-        public IReadOnlyDictionary<T, int> AsDictionary()
-        {
-            throw new NotImplementedException();
-        }
+        public IReadOnlyDictionary<T, int> AsDictionary() => mset;
 
-        public IReadOnlySet<T> AsSet()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(T item)
-        {
-            throw new NotImplementedException();
-        }
+        public IReadOnlySet<T> AsSet() => throw new ArgumentNullException();
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            List<T> tempList = new List<T>();
+            foreach (var x in this)
+            {
+                tempList.Add(x);
+            }
+            tempList.CopyTo(array, arrayIndex);
         }
 
         public IMultiSet<T> ExceptWith(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            if (other == null)
+                throw new ArgumentNullException();
+            IsMultiSetReadonly(this);
+            foreach (var otherEl in other)
+            {
+                if (!mset.ContainsKey(otherEl))
+                    continue;
+                RemoveAll(otherEl);
+            }
+            return this;
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
+            foreach (var (item, multiplicity) in mset)
+            {
+                for (int i = 0; i < multiplicity; i++)
+                    yield return item;
+            }
+        }
+
+        private void NotNullReturnsList(IEnumerable<T> other, out List<T> tempList)
+        {
+            if (other == null)
+                throw new ArgumentNullException();
+            tempList = new List<T>(other);
         }
 
         public IMultiSet<T> IntersectWith(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            IsMultiSetReadonly(this);
+            NotNullReturnsList(other, out List<T> tempList);
+            foreach (var el in mset)
+            {
+                if (tempList.Contains(el.Key))
+                    continue;
+                RemoveAll(el.Key);
+            }
+            foreach (var el in mset.ToList())
+            {
+                mset[el.Key] = 1;
+            }
+            return this;
         }
 
         public bool IsProperSubsetOf(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            NotNullReturnsList(other, out List<T> tempList);
+            if (IsSubsetOf(other) && tempList.Count > this.Count)
+                return true;
+            return false;
         }
 
         public bool IsProperSupersetOf(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            NotNullReturnsList(other, out List<T> tempList);
+            if (IsSupersetOf(other) && this.Count > tempList.Count)
+                return true;
+            return false;
         }
 
         public bool IsSubsetOf(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            NotNullReturnsList(other, out List<T> tempList);
+            foreach (var el in mset)
+            {
+                if (!tempList.Contains(el.Key))
+                    return false;
+            }
+            return true;
         }
 
         public bool IsSupersetOf(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            NotNullReturnsList(other, out List<T> tempList);
+            foreach (var el in tempList)
+            {
+                if (!mset.ContainsKey(el))
+                    return false;
+            }
+            return true;
         }
 
         public bool MultiSetEquals(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            NotNullReturnsList(other, out List<T> tempList);
+            var groupedList = tempList.GroupBy(el => el);
+            foreach (var el in groupedList)
+            {
+                if (!mset.ContainsKey(el.Key))
+                    return false;
+                if (mset[el.Key] != el.Count())
+                    return false;
+            }
+            return !IsProperSubsetOf(other) && !IsProperSupersetOf(other);
         }
 
         public bool Overlaps(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            if (other == null)
+                throw new ArgumentNullException();
+            foreach (var el in other)
+            {
+                if (mset.ContainsKey(el))
+                    return true;
+            }
+            return false;
         }
 
         public IMultiSet<T> SymmetricExceptWith(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            IsMultiSetReadonly(this);
+            NotNullReturnsList(other, out List<T> tempList);
+            foreach (var el in mset)
+            {
+                if (tempList.Contains(el.Key))
+                {
+                    RemoveAll(el.Key);
+                    tempList.Remove(el.Key);
+                }
+            }
+            this.UnionWith(tempList);
+            return this;
         }
 
         public IMultiSet<T> UnionWith(IEnumerable<T> other)
         {
-            throw new NotImplementedException();
+            if (other == null)
+                throw new ArgumentNullException();
+            IsMultiSetReadonly(this);
+            foreach (var el in other)
+                this.Add(el);
+            return this;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

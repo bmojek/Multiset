@@ -1,13 +1,13 @@
 ﻿using System;
 using MultisetClassLibrary;
+
 namespace ConsoleApp
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            Multiset<char> m = new Multiset<char>();
+            MultiSet<char> m = new MultiSet<char>();
             m.Add('a');
             m.Add('a');
             m.Add('a');
@@ -24,7 +24,9 @@ namespace ConsoleApp
             Console.WriteLine(m);
             m.Remove('a');
             Console.WriteLine(m);
-            
+            m.Clear();
+            Console.WriteLine(m);
+            Console.WriteLine(m.Count);
         }
     }
 }
